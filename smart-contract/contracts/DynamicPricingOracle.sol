@@ -9,15 +9,15 @@ import "./DynamicPricingOracleInterface.sol";
 contract DynamicPricingOracle is Ownable, DynamicPricingOracleInterface {
     uint256 public requestCounter;
 
-    event RequestPrice(uint256 requestId, uint256 eventId, address requester);
+    event RequestPrice(uint256 requestId, uint256 ticketId, address requester);
 
     mapping(uint256 => address) public requests;
 
     constructor(address owner) Ownable(owner) {}
 
-    function requestDynamicPrice(uint256 eventId, address requester) external {
+    function requestDynamicPrice(uint256 ticketId, address requester) external {
         requests[requestCounter] = requester;
-        emit RequestPrice(requestCounter, eventId, requester);
+        emit RequestPrice(requestCounter, ticketId, requester);
         requestCounter++;
     }
 
