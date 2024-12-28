@@ -2,57 +2,62 @@
 pragma solidity ^0.8.28;
 
 import "./TicketNFT.sol";
+import "./DynamicPricingOracleClientInterface.sol";
+import "./DynamicPricingOracle.sol";
 
-contract TicketMarketplace is TicketNFT {
+contract TicketMarketplace is TicketNFT, DynamicPricingOracleClientInterface {
     // structure of product
-    struct product {
+    struct Product {
         uint256 ticketId;
-        uint price;
-        uint gas;
+        uint256 price;
         address owner;
     }
 
-    struct boughtProduct {
+    struct BoughtProduct {
         uint price;
         uint gas;
     }
 
-    // Mapping for list product
-    mapping(uint256 => product) public ListProduct;
+    mapping(uint256 => Product) public listProduct; // Mapping to keep track of listed tickets
+    mapping(uint256 => uint256) public dynamicPrices; // Mapping to keep track of dynamic prices
+    mapping(uint256 => bool) public priceUpdated; // Mapping to keep track of whether the price has been updated
+    mapping(uint256 => bool) public hasBeenListed; // Mapping to prevent the same item being listed twice
+    mapping(uint256 => address) public claimableByAccount; // Mapping to keep track of who listed the ticket
+    mapping(uint256 => BoughtProduct[]) public chainBuy; // Mapping to keep track of the chain of buys
+    mapping(uint256 => uint256) public _productID; // Mapping to keep track of the product ID
 
-    // Mapping to prevent the same item being listed twice
-    mapping(uint256 => bool) public hasBeenListed;
+    DynamicPricingOracle public oracle;
 
-    // Mapping used for listing when the owner transfers the token to the contract and would then wish to cancel the listing
-    mapping(uint256 => address) public claimableByAccount;
+    uint256[] public products; // list of product
 
-    // mapping list detail of bought ticket
-    mapping(uint256 => boughtProduct[]) public chainBuy;
-
-    // array of all product just for listing
-    uint256[] public products;
-
-    // mapping key of list product
-    mapping(uint256 => uint256) public _productID;
-
-    // event
-    event addedProduct(
+    // Events
+    event ProductAdded(
         uint256 indexed ticketId,
         uint price,
         address indexed seller
     );
-    event cancelSell(
+
+    event SellCancelled(
         uint256 indexed ticketId,
         uint price,
         address indexed seller
     );
-    event productBought(
+
+    event ProductBought(
         uint256 indexed ticketId,
         uint price,
+        uint gas,
         address indexed buyer
     );
 
-    // modify
+    event DynamicPriceRequested(uint256 indexed ticketId);
+
+    // Constructor
+    constructor(address _oracleAddress) {
+        oracle = DynamicPricingOracle(_oracleAddress);
+    }
+
+    // Modifiers
     modifier onlyTokenOwner(uint256 ticketId) {
         require(
             msg.sender == ownerOf(ticketId),
@@ -61,15 +66,15 @@ contract TicketMarketplace is TicketNFT {
         _;
     }
 
-    modifier isCheck(uint256 ticketId, uint ck) {
-        // 1 = claimableByAccount
-        // 2 = hasBeenListed
-        if (ck == 1) {
+    modifier isCheck(uint256 ticketId, uint code) {
+        // code 1: hold or cancel
+        // code 2: buy
+        if (code == 1) {
             require(
                 msg.sender == claimableByAccount[ticketId],
                 "Only the address that has listed the Ticket can hold or cancel the listing."
             );
-        } else if (ck == 2) {
+        } else if (code == 2) {
             require(
                 hasBeenListed[ticketId],
                 "The ticket needs to be listed in order to be bought, hold or cancel."
@@ -78,44 +83,67 @@ contract TicketMarketplace is TicketNFT {
         _;
     }
 
-    // function
+    // Functions
     function addProduct(
         uint256 _ticketId,
-        uint256 _price,
-        uint256 _gas
+        uint256 _price
     ) public onlyTokenOwner(_ticketId) {
         require(
             !hasBeenListed[_ticketId],
             "The ticket can only be listed once"
         );
-        //send the token to the smart contract
+        // Send the token to the smart contract
         _transfer(msg.sender, address(this), _ticketId);
+
         claimableByAccount[_ticketId] = msg.sender;
-        ListProduct[_ticketId] = product(_ticketId, _price, _gas, msg.sender);
+        listProduct[_ticketId] = Product(_ticketId, _price, msg.sender);
         hasBeenListed[_ticketId] = true;
         products.push(_ticketId);
         _productID[_ticketId] = products.length - 1;
-        emit addedProduct(_ticketId, _price, msg.sender);
+
+        emit ProductAdded(_ticketId, _price, msg.sender);
     }
 
     function cancelProduct(
         uint256 _ticketId
     ) public isCheck(_ticketId, 1) isCheck(_ticketId, 2) {
-        //send the token from the smart contract back to the one who listed it
+        // Send the token from the smart contract back to the one who listed it
         _transfer(address(this), msg.sender, _ticketId);
-        emit cancelSell(_ticketId, ListProduct[_ticketId].price, msg.sender);
+
+        emit SellCancelled(_ticketId, listProduct[_ticketId].price, msg.sender);
+
         delete claimableByAccount[_ticketId];
-        clenup(_ticketId);
+        cleanUp(_ticketId);
+    }
+
+    function requestDynamicPrice(uint256 _ticketId) public {
+        require(
+            listProduct[_ticketId].owner != msg.sender,
+            "Product not listed"
+        );
+        oracle.requestDynamicPrice(_ticketId, address(this));
+        emit DynamicPriceRequested(_ticketId);
+    }
+
+    function dynamicPricingCallback(
+        uint256 ticketId,
+        uint256 price
+    ) external override {
+        require(msg.sender == address(oracle), "Unauthorized oracle");
+        dynamicPrices[ticketId] = price;
+        priceUpdated[ticketId] = true;
     }
 
     function buyProduct(
         uint256 _ticketId
     ) public payable isCheck(_ticketId, 2) {
         uint256 _gas = gasleft();
-        require(
-            ListProduct[_ticketId].price == msg.value,
-            "You need to pay the correct price."
-        );
+
+        require(priceUpdated[_ticketId], "Dynamic price not updated yet");
+        uint256 price = dynamicPrices[_ticketId];
+        require(msg.value >= price, "Insufficient funds");
+
+        // address seller = listProduct[_ticketId].owner;
         // sent to owner
         payable(tokenIdToTicket[_ticketId].owner).transfer(msg.value);
 
@@ -125,33 +153,32 @@ contract TicketMarketplace is TicketNFT {
 
         // list chain of buy
         chainBuy[_ticketId].push(
-            boughtProduct(ListProduct[_ticketId].price, _gas)
+            BoughtProduct(listProduct[_ticketId].price, _gas)
         );
 
-        //clean up
+        // clean up
         delete claimableByAccount[_ticketId];
-        clenup(_ticketId);
-        emit productBought(_ticketId, msg.value, msg.sender);
+        delete dynamicPrices[_ticketId];
+        cleanUp(_ticketId);
+        emit ProductBought(_ticketId, price, _gas, msg.sender);
     }
 
-    function getProdust(
-        uint256 _ticketId
-    ) public view returns (uint256, uint256) {
-        return (ListProduct[_ticketId].price, ListProduct[_ticketId].gas);
+    function getProductPrice(uint256 _ticketId) public view returns (uint256) {
+        return (listProduct[_ticketId].price);
     }
 
-    function getChainBuy(
+    function getProductPriceHistory(
         uint256 _ticketId
-    ) public view returns (boughtProduct[] memory) {
+    ) public view returns (BoughtProduct[] memory) {
         return chainBuy[_ticketId];
     }
 
-    function getListing() public view returns (uint256[] memory) {
+    function getListedProducts() public view returns (uint256[] memory) {
         return products;
     }
 
-    function clenup(uint256 _key) private {
-        delete ListProduct[_key];
+    function cleanUp(uint256 _key) private {
+        delete listProduct[_key];
         delete hasBeenListed[_key];
         products[_productID[_key]] = products[products.length - 1];
         products.pop();
