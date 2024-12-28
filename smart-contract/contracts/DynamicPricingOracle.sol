@@ -13,10 +13,13 @@ contract DynamicPricingOracle is Ownable, DynamicPricingOracleInterface {
 
     mapping(uint256 => address) public requests;
 
+    mapping(uint256 => uint256) public requestToTicketId;
+
     constructor(address owner) Ownable(owner) {}
 
     function requestDynamicPrice(uint256 ticketId, address requester) external {
         requests[requestCounter] = requester;
+        requestToTicketId[requestCounter] = ticketId;
         emit RequestPrice(requestCounter, ticketId, requester);
         requestCounter++;
     }
@@ -26,7 +29,7 @@ contract DynamicPricingOracle is Ownable, DynamicPricingOracleInterface {
         require(requester != address(0), "Invalid requestId");
 
         DynamicPricingOracleClientInterface(requester).dynamicPricingCallback(
-            requestId,
+            requestToTicketId[requestId],
             price
         );
     }
