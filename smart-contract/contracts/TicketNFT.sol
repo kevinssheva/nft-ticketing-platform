@@ -7,9 +7,9 @@ contract TicketNFT is ERC721URIStorage {
     constructor() ERC721("TicketNFT", "TNFT") {}
 
     // structure of ticket
-    struct ticket {
-        uint256 EvntID;
-        string EventName;
+    struct Ticket {
+        uint256 eventId;
+        string eventName;
         uint256 dateEvent;
         string zone;
         string seat;
@@ -23,13 +23,15 @@ contract TicketNFT is ERC721URIStorage {
     // ticket has been created and minted
     mapping(string => bool) public hasBeenMinted;
     // list of key => value of ticket
-    mapping(uint256 => ticket) public tokenIdToTicket;
+    mapping(uint256 => Ticket) public tokenIdToTicket;
     // array of list ticket
     uint256[] private tickets;
     // user limit buy/event
-    mapping(address => mapping(uint256 => uint256)) public UserLimit;
+    mapping(address => mapping(uint256 => uint256)) public userLimit;
 
-    // event
+    mapping(bytes32 => bool) private seatOccupied;
+
+    // Events
     event TicketMinted(
         uint256 indexed tokenId,
         uint256 indexed EventID,
@@ -37,94 +39,117 @@ contract TicketNFT is ERC721URIStorage {
         string metadata
     );
 
-    // function
-    function MintTicket(
-        uint256 _TicketID,
-        uint256 _EventID,
-        string memory _EventName,
-        uint256 _dateEvent,
-        string memory _zone,
-        string memory _seat,
-        uint _priceSeat,
-        uint _priceGas,
-        string memory _metadata,
-        address _sender
-    ) private returns (uint256) {
-        ticket memory newTicket = ticket(
-            _EventID,
-            _EventName,
-            _dateEvent,
-            _zone,
-            _seat,
-            _sender,
-            _sender,
-            _priceSeat,
-            _priceGas,
-            _metadata
-        );
-        tickets.push(_TicketID);
-        _safeMint(msg.sender, _TicketID);
-        _setTokenURI(_TicketID, _metadata);
-        tokenIdToTicket[_TicketID] = newTicket;
-        hasBeenMinted[_metadata] = true;
-        emit TicketMinted(_TicketID, _EventID, msg.sender, _metadata);
-        return _TicketID;
-    }
+    event TicketCreated(
+        uint256 indexed tokenId,
+        uint256 indexed eventId,
+        string zone,
+        string seat
+    );
 
-    function getTicket(uint256 _tokenId) public view returns (ticket memory) {
-        return tokenIdToTicket[_tokenId];
+    // Function
+    function mintTicket(
+        uint256 ticketId,
+        uint256 eventId,
+        string memory eventName,
+        uint256 dateEvent,
+        string memory zone,
+        string memory seat,
+        uint256 priceSeat,
+        uint256 priceGas,
+        string memory metadata,
+        address sender
+    ) private returns (uint256) {
+        require(_ownerOf(ticketId) == address(0), "Ticket ID already exists");
+
+        bytes32 seatHash = keccak256(abi.encodePacked(zone, seat, eventId));
+        require(!seatOccupied[seatHash], "Seat already occupied");
+
+        Ticket memory newTicket = Ticket(
+            eventId,
+            eventName,
+            dateEvent,
+            zone,
+            seat,
+            sender,
+            sender,
+            priceSeat,
+            priceGas,
+            metadata
+        );
+        tickets.push(ticketId);
+        _safeMint(sender, ticketId);
+        _setTokenURI(ticketId, metadata);
+        tokenIdToTicket[ticketId] = newTicket;
+        hasBeenMinted[metadata] = true;
+        seatOccupied[seatHash] = true;
+
+        emit TicketMinted(ticketId, eventId, sender, metadata);
+        return ticketId;
     }
 
     function createTicket(
-        uint256 _TicketID,
-        uint256 _EventID,
-        string memory _EventName,
-        uint256[] memory _date,
-        string memory _zone,
-        string memory _seat,
-        uint _priceSeat,
-        uint256 _limit,
-        string memory _metadata,
-        address _owner,
-        bool _isHold
+        uint256 ticketId,
+        uint256 eventId,
+        string memory eventName,
+        uint256[] memory dates,
+        string memory zone,
+        string memory seat,
+        uint256 priceSeat,
+        uint256 limit,
+        string memory metadata,
+        address owner,
+        bool isHold
     ) public payable returns (uint256) {
+        require(!hasBeenMinted[metadata], "Metadata already used");
+
         // date 0 = date event, date 1 = date sell, date 2 = date buy
-        uint256 _gas = gasleft();
-        require(
-            !hasBeenMinted[_metadata],
-            "This metadata has already been used to mint an NFT."
-        );
-        require(_date[1] <= _date[2], "This Ticket is not for sell yet");
-        if (!_isHold) {
+        uint256 gasCost = gasleft();
+        // require(_date[1] <= _date[2], "This Ticket is not for sell yet");
+        if (!isHold) {
+            require(priceSeat == msg.value, "Incorrect payment amount");
             require(
-                _priceSeat == msg.value,
-                "You need to pay the correct price."
+                userLimit[msg.sender][eventId] + 1 <= limit,
+                "Purchase limit exceeded"
             );
-            require(
-                UserLimit[msg.sender][_EventID] + 1 <= _limit,
-                "You buy Ticket of this event to the limit"
-            );
-            uint _userlim = UserLimit[msg.sender][_EventID];
-            if (_userlim > 0) {
-                _userlim += 1;
-            } else {
-                _userlim = 1;
-            }
-            UserLimit[msg.sender][_EventID] = _userlim;
-            payable(_owner).transfer(msg.value);
+
+            userLimit[msg.sender][eventId] = userLimit[msg.sender][eventId] + 1;
+
+            (bool success, ) = payable(owner).call{value: msg.value}("");
+            require(success, "Payment failed");
         }
-        MintTicket(
-            _TicketID,
-            _EventID,
-            _EventName,
-            _date[0],
-            _zone,
-            _seat,
-            _priceSeat,
-            _gas,
-            _metadata,
+        uint256 newTicketId = mintTicket(
+            ticketId,
+            eventId,
+            eventName,
+            dates[0],
+            zone,
+            seat,
+            priceSeat,
+            gasCost,
+            metadata,
             msg.sender
         );
-        return _TicketID;
+        emit TicketCreated(newTicketId, eventId, zone, seat);
+        return newTicketId;
+    }
+
+    function getTicket(uint256 tokenId) public view returns (Ticket memory) {
+        require(_ownerOf(tokenId) != address(0), "Ticket does not exist");
+        return tokenIdToTicket[tokenId];
+    }
+
+    function getTotalTickets() public view returns (uint256) {
+        return tickets.length;
+    }
+
+    function isTicketValid(uint256 tokenId) public view returns (bool) {
+        if (_ownerOf(tokenId) == address(0)) return false;
+
+        Ticket memory ticket = tokenIdToTicket[tokenId];
+        bytes32 seatHash = keccak256(
+            abi.encodePacked(ticket.zone, ticket.seat, ticket.eventId)
+        );
+
+        return seatOccupied[seatHash];
     }
 }
