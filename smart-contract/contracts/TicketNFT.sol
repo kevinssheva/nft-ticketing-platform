@@ -17,11 +17,8 @@ contract TicketNFT is ERC721URIStorage {
         address creator;
         uint priceSeat;
         uint priceGas;
-        string metadata;
     }
-    // mapping
-    // ticket has been created and minted
-    mapping(string => bool) public hasBeenMinted;
+
     // list of key => value of ticket
     mapping(uint256 => Ticket) public tokenIdToTicket;
     // array of list ticket
@@ -35,8 +32,7 @@ contract TicketNFT is ERC721URIStorage {
     event TicketMinted(
         uint256 indexed tokenId,
         uint256 indexed EventID,
-        address creator,
-        string metadata
+        address creator
     );
 
     event TicketCreated(
@@ -56,7 +52,6 @@ contract TicketNFT is ERC721URIStorage {
         string memory seat,
         uint256 priceSeat,
         uint256 priceGas,
-        string memory metadata,
         address sender
     ) private returns (uint256) {
         require(_ownerOf(ticketId) == address(0), "Ticket ID already exists");
@@ -73,17 +68,15 @@ contract TicketNFT is ERC721URIStorage {
             sender,
             sender,
             priceSeat,
-            priceGas,
-            metadata
+            priceGas
         );
+
         tickets.push(ticketId);
         _safeMint(sender, ticketId);
-        _setTokenURI(ticketId, metadata);
         tokenIdToTicket[ticketId] = newTicket;
-        hasBeenMinted[metadata] = true;
         seatOccupied[seatHash] = true;
 
-        emit TicketMinted(ticketId, eventId, sender, metadata);
+        emit TicketMinted(ticketId, eventId, sender);
         return ticketId;
     }
 
@@ -96,12 +89,9 @@ contract TicketNFT is ERC721URIStorage {
         string memory seat,
         uint256 priceSeat,
         uint256 limit,
-        string memory metadata,
         address owner,
         bool isHold
     ) public payable returns (uint256) {
-        require(!hasBeenMinted[metadata], "Metadata already used");
-
         // date 0 = date event, date 1 = date sell, date 2 = date buy
         uint256 gasCost = gasleft();
         // require(_date[1] <= _date[2], "This Ticket is not for sell yet");
@@ -126,7 +116,6 @@ contract TicketNFT is ERC721URIStorage {
             seat,
             priceSeat,
             gasCost,
-            metadata,
             msg.sender
         );
         emit TicketCreated(newTicketId, eventId, zone, seat);

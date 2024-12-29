@@ -46,7 +46,6 @@ async function main() {
   const seat = 'A1';
   const price = ethers.parseEther('0.1');
   const limit = 5;
-  const metadata = 'ipfs://QmTicketMetadata';
 
   const mintTx = await marketplace
     .connect(seller)
@@ -59,7 +58,6 @@ async function main() {
       seat,
       price,
       limit,
-      metadata,
       seller.address,
       true
     );
@@ -68,10 +66,9 @@ async function main() {
 
   // List ticket in marketplace
   console.log('\nListing ticket in marketplace...');
-  const listingPrice = ethers.parseEther('0.15');
   const listTx = await marketplace
     .connect(seller)
-    .addProduct(ticketId, listingPrice);
+    .addProduct(ticketId);
   await listTx.wait();
   console.log('Ticket listed successfully');
 
