@@ -13,10 +13,10 @@ export const seat = pgTable("seat", {
   seatId: text("seat_id").notNull(),
   seatRow: text("seat_row").notNull(),
   zone: text("zone").notNull(),
-  creatorId: text("creator_id")
+  creatorAddress: text("creator_id")
     .notNull()
     .references(() => account.address),
-  ownerId: text("owner_id")
+  ownerAddress: text("owner_id")
     .notNull()
     .references(() => account.address),
 });
@@ -27,12 +27,12 @@ export const seatRelation = relations(seat, ({ one }) => ({
     references: [event.id],
   }),
   creator: one(account, {
-    fields: [seat.creatorId],
+    fields: [seat.creatorAddress],
     references: [account.address],
     relationName: "creator",
   }),
   owner: one(account, {
-    fields: [seat.ownerId],
+    fields: [seat.ownerAddress],
     references: [account.address],
     relationName: "owned_ticket",
   }),
