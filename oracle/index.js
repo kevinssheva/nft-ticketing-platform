@@ -23,7 +23,7 @@ class DynamicPricingOracleNode {
     this.processedRequests = new Set();
   }
 
-  async calculateDynamicPrice(ticketId, eventId) {
+  async calculateDynamicPrice(ticketId) {
     try {
       // Example dynamic pricing logic
       // In a real implementation, you might:
