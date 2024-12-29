@@ -55,7 +55,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     walletAddress: string
   ): Promise<Account | null> => {
     try {
-      const response = await fetch(`/api/account`, {
+      const response = await fetch(`/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ address: walletAddress }),
@@ -85,7 +85,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      const response = await fetch(`/api/account/register`, {
+      const response = await fetch(`/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ address, username, fullName }),

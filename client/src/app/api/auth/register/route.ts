@@ -2,14 +2,30 @@ import { db } from "@/db/drizzle";
 import { account } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+export const RegisterFormSchema = z.object({
+  username: z
+    .string()
+    .min(3, {
+      message: "Please enter a longer username.",
+    })
+    .nonempty({ message: "Please enter a username." }),
+  fullName: z.string().nonempty({
+    message: "Please enter your full name.",
+  }),
+  idCard: z.instanceof(File).refine((file) => file?.size > 0, {
+    message: "Please upload your ID card.",
+  }),
+});
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { address, username, fullName } = body;
+  const { address, username, fullName, idCard } = body;
 
-  if (!address || !username || !fullName) {
+  if (!address || !username || !fullName || !idCard) {
     return NextResponse.json(
-      { error: "Address, username, and full name are required." },
+      { error: "Address, username, full name and ID card are required." },
       { status: 400 }
     );
   }
