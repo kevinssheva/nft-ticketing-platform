@@ -1,16 +1,15 @@
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text } from "drizzle-orm/pg-core";
 import { account, event } from ".";
 import { relations } from "drizzle-orm";
+import { createId } from "@paralleldrive/cuid2";
 
 export const seat = pgTable("seat", {
-  id: text("id").primaryKey(),
+  id: text("id").primaryKey().$defaultFn(createId),
   eventId: text("event_id")
     .notNull()
     .references(() => event.id),
-  gas: text("gas").notNull(),
   price: text("gas").notNull(),
   transactionHash: text("transaction_hash"),
-  seatId: text("seat_id").notNull(),
   seatRow: text("seat_row").notNull(),
   zone: text("zone").notNull(),
   creatorAddress: text("creator_id")
@@ -19,6 +18,7 @@ export const seat = pgTable("seat", {
   ownerAddress: text("owner_id")
     .notNull()
     .references(() => account.address),
+  is_selling: boolean("is_selling")
 });
 
 export const seatRelation = relations(seat, ({ one }) => ({
