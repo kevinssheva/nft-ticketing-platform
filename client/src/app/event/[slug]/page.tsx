@@ -17,6 +17,8 @@ const EventDetail = async ({
 }) => {
   const slug = (await params).slug;
 
+  // TODO: call backend api to get the event associated with slug id
+
   const event = {
     eventName: "TWICE 5th World Tour Ready To Be",
     eventDetail: "Event Detail",
