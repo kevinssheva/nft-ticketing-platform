@@ -10,16 +10,32 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-// import { useWallet } from "@/contexts/WalletContext";
+import { useWallet } from "@/contexts/WalletContext";
+import { getPinataUrl, pinata } from "@/lib/pinata";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
-import { RegisterFormSchema } from "../api/auth/register/route";
+import { useRouter } from "next/navigation";
+
+export const RegisterFormSchema = z.object({
+  username: z
+    .string()
+    .min(3, {
+      message: "Please enter a longer username.",
+    })
+    .nonempty({ message: "Please enter a username." }),
+  fullName: z.string().nonempty({
+    message: "Please enter your full name.",
+  }),
+  idCard: z.instanceof(File).refine((file) => file?.size > 0, {
+    message: "Please upload your ID card.",
+  }),
+});
 
 const Register = () => {
-  //   const wallet = useWallet();
-
+  const router = useRouter();
+  const wallet = useWallet();
   const form = useForm<z.infer<typeof RegisterFormSchema>>({
     resolver: zodResolver(RegisterFormSchema),
     defaultValues: {
@@ -28,11 +44,21 @@ const Register = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof RegisterFormSchema>) {
-    console.log("Form Values:", values);
-    const idCardFile = values.idCard;
-    if (idCardFile) {
-      console.log("Uploaded ID Card:", idCardFile.name);
+  async function onSubmit(values: z.infer<typeof RegisterFormSchema>) {
+    try {
+      const upload = await pinata.upload.file(values.idCard);
+      const ipfsCid = await pinata.gateways.convert(upload.IpfsHash);
+
+      await wallet.registerAccount(
+        values.username,
+        values.fullName,
+        getPinataUrl(ipfsCid)
+      );
+
+      router.push("/");
+    } catch (error) {
+      console.error("Error uploading file to Pinata:", error);
+      alert("Failed to upload file. Please try again.");
     }
   }
 

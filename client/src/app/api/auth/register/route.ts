@@ -2,22 +2,6 @@ import { db } from "@/db/drizzle";
 import { account } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { z } from "zod";
-
-export const RegisterFormSchema = z.object({
-  username: z
-    .string()
-    .min(3, {
-      message: "Please enter a longer username.",
-    })
-    .nonempty({ message: "Please enter a username." }),
-  fullName: z.string().nonempty({
-    message: "Please enter your full name.",
-  }),
-  idCard: z.instanceof(File).refine((file) => file?.size > 0, {
-    message: "Please upload your ID card.",
-  }),
-});
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -37,6 +21,7 @@ export async function POST(req: Request) {
       .where(eq(account.address, address))
       .limit(1);
 
+    console.log(existingUser);
     if (existingUser.length > 0) {
       return NextResponse.json(
         { error: "User already exists." },
@@ -44,12 +29,21 @@ export async function POST(req: Request) {
       );
     }
 
-    const newUser = db
+    const newUser = await db
       .insert(account)
-      .values({ address, username, fullName, idCard: "" }) // TODO: INI NANTI MINTA URL LINK!
+      .values({ address, username, fullName, idCard })
       .returning();
 
-    return NextResponse.json(newUser, { status: 201 });
+    console.log(newUser);
+
+    const plainNewUser = newUser.map((user) => ({
+      address: user.address,
+      username: user.username,
+      fullName: user.fullName,
+      idCard: user.idCard,
+    }));
+
+    return NextResponse.json(plainNewUser, { status: 201 });
   } catch (error) {
     console.error("Database error:", error);
     return NextResponse.json(

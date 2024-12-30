@@ -77,18 +77,17 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const registerAccount = async (
     username: string,
     fullName: string,
-    idCard: string = "placeholder"
+    idCard: string
   ) => {
     if (!address) {
-      console.error("Wallet address is required to register.");
-      return;
+      throw Error("Wallet address is required to register.");
     }
 
     try {
       const response = await fetch(`/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, username, fullName }),
+        body: JSON.stringify({ address, username, fullName, idCard }),
       });
 
       if (response.ok) {

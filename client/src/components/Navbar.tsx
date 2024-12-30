@@ -50,7 +50,9 @@ const Navbar = () => {
         </div>
         <div className="flex gap-4">
           {wallet.account === null ? (
-            <button className="text-purple-500">Register</button>
+            <Link href="/register" className="text-purple-500">
+              Register
+            </Link>
           ) : (
             <p>Hi, {wallet.account.fullName}</p>
           )}
