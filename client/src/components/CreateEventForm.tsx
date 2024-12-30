@@ -18,15 +18,12 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 
 const CreateEventForm = () => {
-  const validateFile = (file: FileList | null) => {
-    if (!file) {
-      return "File is required.";
-    }
+  const validateFile = (file: FileList) => {
     if (file.length !== 1) {
-      return "Please only select one file";
+      return false;
     }
     if (file[0].type !== "image/png" && file[0].type !== "image/jpg") {
-      return "Please upload a PNG or JPG file";
+      return false;
     }
     return true;
   };
@@ -36,29 +33,26 @@ const CreateEventForm = () => {
       .string({
         message: "Please specify the event name.",
       })
-      .trim(),
+      .trim()
+      .min(4, { message: "Event name too short." }),
     eventDetail: z.coerce
       .string({
         message: "Please describe the event.",
       })
-      .trim(),
-    eventDate: z.coerce
-      .string({
-        message: "Please specify the event start time.",
-      })
       .trim()
-      .date(),
-    sellDate: z.coerce
-      .string({
-        message: "Please specify when the tickets can be purchased.",
-      })
-      .trim()
-      .date(),
+      .min(4, { message: "Event detail too short." }),
+    eventDate: z.coerce.date({
+      message: "Please specify the event start time.",
+    }),
+    sellDate: z.coerce.date({
+      message: "Please specify when the tickets can be purchased.",
+    }),
     venue: z.coerce
       .string({
         message: "Please specify where the event will be held.",
       })
       .trim()
+      .min(4, { message: "Venue name too short." })
       .max(4000),
     purchaseLimit: z.coerce
       .number({
@@ -102,9 +96,15 @@ const CreateEventForm = () => {
       .min(1, { message: "Please add at least one zone." }),
     posterImage: z
       .instanceof(FileList, { message: "Please upload a valid file." })
+      .refine((file: FileList | null) => file !== null, {
+        message: "Please upload a valid file.",
+      })
       .refine(validateFile, { message: "Invalid file format." }),
     seatImage: z
       .instanceof(FileList, { message: "Please upload a valid file." })
+      .refine((file: FileList | null) => file !== null, {
+        message: "Please upload a valid file.",
+      })
       .refine(validateFile, { message: "Invalid file format." }),
   });
 
@@ -113,8 +113,8 @@ const CreateEventForm = () => {
     defaultValues: {
       eventName: "",
       eventDetail: "",
-      eventDate: "",
-      sellDate: "",
+      eventDate: new Date(),
+      sellDate: new Date(),
       venue: "",
       purchaseLimit: 0,
       tickets: [{ zone: "", row: 0, seat: 0, price: 0 }],
@@ -123,6 +123,8 @@ const CreateEventForm = () => {
     },
   });
 
+  const eventDateRef = form.register("eventDate");
+  const sellDateRef = form.register("sellDate");
   const posterImageRef = form.register("posterImage");
   const seatImageRef = form.register("seatImage");
 
@@ -204,7 +206,11 @@ const CreateEventForm = () => {
                   <FormItem>
                     <FormLabel>Event Date</FormLabel>
                     <FormControl>
-                      <Input placeholder="Event Date" type="date" {...field} />
+                      <Input
+                        placeholder="Event Date"
+                        type="datetime-local"
+                        {...eventDateRef}
+                      />
                     </FormControl>
                     <FormDescription>
                       Enter the event start time.
@@ -222,7 +228,11 @@ const CreateEventForm = () => {
                   <FormItem>
                     <FormLabel>Sell Date</FormLabel>
                     <FormControl>
-                      <Input placeholder="Sell Date" type="date" {...field} />
+                      <Input
+                        placeholder="Sell Date"
+                        type="datetime-local"
+                        {...sellDateRef}
+                      />
                     </FormControl>
                     <FormDescription>
                       Enter when the tickets can be purchased.
