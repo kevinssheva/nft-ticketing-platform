@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         zone: newTicket.zone,
         creatorAddress: newTicket.creator,
         ownerAddress: newTicket.owner,
-        is_selling: true,
+        is_selling: false,
       }
     }))
 

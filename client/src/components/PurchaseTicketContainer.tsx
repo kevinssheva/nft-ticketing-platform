@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Button } from "./ui/button";
-import { Card } from "./ui/card";
+import { Card, CardHeader, CardTitle } from "./ui/card";
 import { useWallet } from "@/contexts/WalletContext";
 
 const PurchaseTicketContainer = ({
@@ -34,7 +34,7 @@ const PurchaseTicketContainer = ({
       if (response.ok) {
         alert("Successfully bought ticket.");
       } else {
-        alert(data.error || "Failed to update seat");
+        alert(data.error || "Failed to update ticket");
       }
     } catch (error) {
       alert("Internal server error");
@@ -43,6 +43,11 @@ const PurchaseTicketContainer = ({
 
   return (
     <div className="flex flex-col gap-16">
+      <CardHeader>
+        <CardTitle className="text-center text-2xl font-bold text-gray-800">
+          Purchase Ticket
+        </CardTitle>
+      </CardHeader>
       <div className="grid grid-rows-2 w-full h-full relative min-w-fit min-h-fit">
         <p className="text-xl font-bold text-center row-start-1">
           Seating Arrangement

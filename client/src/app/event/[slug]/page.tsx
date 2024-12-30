@@ -10,8 +10,9 @@ import {
   Ticket,
 } from "lucide-react";
 import Image from "next/image";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
+import SellTicketContainer from "@/components/SellTicketContainer";
 
 const EventDetail = ({ params }: { params: Promise<{ slug: string }> }) => {
   const [event, setEvent] = useState<{
@@ -156,12 +157,8 @@ const EventDetail = ({ params }: { params: Promise<{ slug: string }> }) => {
             </div>
           </div>
           <Card className="w-full h-full shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-center text-2xl font-bold text-gray-800">
-                Purchase Ticket
-              </CardTitle>
-            </CardHeader>
             <CardContent>
+              <SellTicketContainer />
               <PurchaseTicketContainer
                 tickets={tickets}
                 imageSeats={event.imageSeats}

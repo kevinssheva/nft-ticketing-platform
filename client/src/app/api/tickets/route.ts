@@ -28,13 +28,13 @@ export async function GET(req: Request) {
 }
 
 // Change owner address & change status to selling
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request) {
   const url = new URL(req.url);
   const seatId = url.searchParams.get("seatId");
 
   const { ownerAddress, isSelling } = await req.json();
 
-  if ((!ownerAddress && !isSelling) || !seatId) {
+  if ((!ownerAddress && isSelling === undefined) || !seatId) {
     return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
   }
 
@@ -45,7 +45,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       if (seatRecord.length === 0) {
         return NextResponse.json({ error: "Seat not found" }, { status: 404 });
       }
-
 
       const updatedSeat = await db
         .update(seat)
