@@ -3,13 +3,21 @@ const DynamicPricingOracle = require('./DynamicPricingOracle.json');
 
 // Configuration
 const config = {
-  nodeUrl: 'http://127.0.0.1:36879',
+  nodeUrl: 'http://127.0.0.1:8545',
   privateKey:
-    'c5114526e042343c6d1899cad05e1c00ba588314de9b96929914ee0df18d46b2',
-  oracleAddress: '0xA791D59427B2b7063050187769AC871B497F4b3C',
+    '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
+  oracleAddress: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
   retryDelay: 5000, // 5 seconds
   maxRetries: 3,
 };
+// const config = {
+//   nodeUrl: 'http://127.0.0.1:8545',
+//   privateKey:
+//     'c5114526e042343c6d1899cad05e1c00ba588314de9b96929914ee0df18d46b2',
+//   oracleAddress: '0xA791D59427B2b7063050187769AC871B497F4b3C',
+//   retryDelay: 5000, // 5 seconds
+//   maxRetries: 3,
+// };
 
 class DynamicPricingOracleNode {
   constructor() {
