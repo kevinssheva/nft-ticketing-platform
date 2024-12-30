@@ -1,12 +1,20 @@
 const ethers = require('ethers');
+const fs = require('fs');
 const DynamicPricingOracle = require('./DynamicPricingOracle.json');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const deployedAddresses = JSON.parse(fs.readFileSync('./deployedAddresses.json', 'utf8'));
+const wallets = JSON.parse(fs.readFileSync('./wallets.json', 'utf8'));
+
+const ownerPrivateKey = wallets.find(wallet => wallet.address === deployedAddresses.owner).privateKey;
 
 // Configuration
 const config = {
-  nodeUrl: 'http://127.0.0.1:36879',
-  privateKey:
-    'c5114526e042343c6d1899cad05e1c00ba588314de9b96929914ee0df18d46b2',
-  oracleAddress: '0xA791D59427B2b7063050187769AC871B497F4b3C',
+  nodeUrl: process.env.RPC_URL,
+  privateKey: ownerPrivateKey,
+  oracleAddress: deployedAddresses.oracle,
   retryDelay: 5000, // 5 seconds
   maxRetries: 3,
 };
