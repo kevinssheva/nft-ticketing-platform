@@ -16,8 +16,11 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { useWallet } from "@/contexts/WalletContext";
 
 const CreateEventForm = () => {
+  const wallet = useWallet();
+
   const validateFile = (file: FileList) => {
     if (file.length !== 1) {
       return false;
@@ -133,8 +136,44 @@ const CreateEventForm = () => {
     control: form.control,
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  const convertFileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        const base64Data = base64String.split(",")[1]; // Remove the data URL prefix
+        resolve(base64Data);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const posterImageBase64 = await convertFileToBase64(values.posterImage[0]);
+    const seatImageBase64 = await convertFileToBase64(values.seatImage[0]);
+
+    const requestData = {
+      ...values,
+      owner: wallet.address!.split("x")[1],
+      posterImage: posterImageBase64,
+      seatImage: seatImageBase64,
+    };
+
+    try {
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+
+      if (response.ok) {
+        alert("Event created succesfully");
+      } else {
+        alert("Error creating event");
+      }
+    } catch (error) {
+      console.error("Unknown error occured:", error);
+    }
   }
 
   return (
