@@ -10,7 +10,9 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+        restart: true
     networks:
       - blockchain
 

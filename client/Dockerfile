@@ -10,5 +10,6 @@ FROM base AS release
 COPY --from=install /tmp/dev/node_modules node_modules
 COPY . .
 
+USER bun
 EXPOSE 3000/tcp
 ENTRYPOINT ["bun", "run", "dev"]
