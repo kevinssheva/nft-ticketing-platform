@@ -3,14 +3,15 @@ import { seat } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request) {
   try {
-    const { id } = params;
+    const url = new URL(req.url);
+    const id = url.searchParams.get("id");
 
     const ticket = await db
       .select()
       .from(seat)
-      .where(sql`${seat.eventId} = ${id}`);
+      .where(sql`${seat.eventId} = ${id} AND ${seat.is_selling} = TRUE`);
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
@@ -26,9 +27,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-// Change owner address
+// Change owner address & change status to selling
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const seatId = params.id;
+  const url = new URL(req.url);
+  const seatId = url.searchParams.get("seatId");
+
   const { ownerAddress, isSelling } = await req.json();
 
   if ((!ownerAddress && !isSelling) || !seatId) {
@@ -42,6 +45,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       if (seatRecord.length === 0) {
         return NextResponse.json({ error: "Seat not found" }, { status: 404 });
       }
+
 
       const updatedSeat = await db
         .update(seat)

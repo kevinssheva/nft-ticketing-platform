@@ -141,8 +141,7 @@ const CreateEventForm = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        const base64Data = base64String.split(",")[1]; // Remove the data URL prefix
-        resolve(base64Data);
+        resolve(base64String);
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
@@ -154,7 +153,7 @@ const CreateEventForm = () => {
 
     const requestData = {
       ...values,
-      owner: wallet.address!.split("x")[1],
+      owner: wallet.address,
       posterImage: posterImageBase64,
       seatImage: seatImageBase64,
     };

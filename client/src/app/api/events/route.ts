@@ -1,5 +1,6 @@
 import { db } from "@/db/drizzle";
 import { event, seat } from "@/db/schema";
+import { getPinataUrl, pinata } from "@/lib/pinata";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -13,11 +14,17 @@ export async function POST(req: Request) {
     );
   }
 
-  // TODO: implement IPFS
-  // const imagePosterUrl = posterImage;
-  // const imageSeatsUrl = seatImage;
-  const imagePosterUrl = "ABCDE";
-  const imageSeatsUrl = "ABCDE";
+  const base64ToFile = (base64: string, filename: string, mimeType: string): File =>
+    new File([new Blob([new Uint8Array(atob(base64.split(',')[1]).split('').map(c => c.charCodeAt(0)))], { type: mimeType })], filename, { type: mimeType });
+
+
+  const posterUpload = await pinata.upload.file(base64ToFile(posterImage, "poster.png", "image/png"));
+  const posterIPFSCid = await pinata.gateways.convert(posterUpload.IpfsHash);
+  const imagePosterUrl = getPinataUrl(posterIPFSCid);
+
+  const seatsUpload = await pinata.upload.file(base64ToFile(seatImage, "poster.png", "image/png"));
+  const seatsIPFSCid = await pinata.gateways.convert(seatsUpload.IpfsHash);
+  const imageSeatsUrl = getPinataUrl(seatsIPFSCid);
 
   try {
     const newEvent = await db.insert(event).values({
@@ -63,7 +70,8 @@ export async function POST(req: Request) {
         seatRow: newTicket.row,
         zone: newTicket.zone,
         creatorAddress: newTicket.creator,
-        ownerAddress: newTicket.owner
+        ownerAddress: newTicket.owner,
+        is_selling: true,
       }
     }))
 
