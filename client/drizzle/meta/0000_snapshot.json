@@ -1,5 +1,5 @@
 {
-  "id": "f7f69b2b-db32-4d3f-a97f-633c047c2a1a",
+  "id": "2f53f26a-7449-45e3-baa4-441e5ecbee93",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -22,6 +22,12 @@
         },
         "full_name": {
           "name": "full_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_card": {
+          "name": "id_card",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -151,12 +157,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "seat_id": {
-          "name": "seat_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "seat_row": {
           "name": "seat_row",
           "type": "text",
@@ -180,6 +180,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_selling": {
+          "name": "is_selling",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},

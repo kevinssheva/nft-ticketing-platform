@@ -1,0 +1,1 @@
+ALTER TABLE "seat" ALTER COLUMN "owner_id" DROP NOT NULL;

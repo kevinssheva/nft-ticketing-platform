@@ -41,11 +41,8 @@ const Navbar = () => {
           <Link href="/" className="text-purple-500">
             Create Event
           </Link>
-          <Link href="/" className="text-purple-500">
-            My Tickets
-          </Link>
-          <Link href="/" className="text-purple-500">
-            My Listings
+          <Link href="/profile" className="text-purple-500">
+            My Profile
           </Link>
         </div>
         <div className="flex gap-4">

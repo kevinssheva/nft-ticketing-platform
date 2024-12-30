@@ -1,7 +1,8 @@
 CREATE TABLE "account" (
 	"address" text PRIMARY KEY NOT NULL,
 	"username" text NOT NULL,
-	"full_name" text NOT NULL
+	"full_name" text NOT NULL,
+	"id_card" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "event" (
@@ -22,11 +23,11 @@ CREATE TABLE "seat" (
 	"event_id" text NOT NULL,
 	"gas" text NOT NULL,
 	"transaction_hash" text,
-	"seat_id" text NOT NULL,
 	"seat_row" text NOT NULL,
 	"zone" text NOT NULL,
 	"creator_id" text NOT NULL,
-	"owner_id" text NOT NULL
+	"owner_id" text NOT NULL,
+	"is_selling" boolean
 );
 --> statement-breakpoint
 ALTER TABLE "event" ADD CONSTRAINT "event_creator_address_account_address_fk" FOREIGN KEY ("creator_address") REFERENCES "public"."account"("address") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

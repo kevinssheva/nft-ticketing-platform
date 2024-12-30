@@ -1,7 +1,7 @@
 import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { account } from "./account.schema";
-import { relations } from "drizzle-orm";
+import { InferSelectModel, relations } from "drizzle-orm";
 import { seat } from ".";
 
 export const event = pgTable("event", {
@@ -28,3 +28,5 @@ export const eventRelation = relations(event, ({ one, many }) => ({
   }),
   ticket: many(seat),
 }));
+
+export type Event = InferSelectModel<typeof event>;

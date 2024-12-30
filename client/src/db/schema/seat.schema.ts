@@ -1,6 +1,6 @@
 import { boolean, pgTable, text } from "drizzle-orm/pg-core";
-import { account, event } from ".";
-import { relations } from "drizzle-orm";
+import { Event, account, event } from ".";
+import { InferSelectModel, relations } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
 export const seat = pgTable("seat", {
@@ -15,10 +15,8 @@ export const seat = pgTable("seat", {
   creatorAddress: text("creator_id")
     .notNull()
     .references(() => account.address),
-  ownerAddress: text("owner_id")
-    .notNull()
-    .references(() => account.address),
-  is_selling: boolean("is_selling")
+  ownerAddress: text("owner_id").references(() => account.address),
+  is_selling: boolean("is_selling"),
 });
 
 export const seatRelation = relations(seat, ({ one }) => ({
@@ -37,3 +35,5 @@ export const seatRelation = relations(seat, ({ one }) => ({
     relationName: "owned_ticket",
   }),
 }));
+
+export type Seat = InferSelectModel<typeof seat> & { event?: Event };
