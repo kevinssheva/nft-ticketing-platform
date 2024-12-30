@@ -1,18 +1,25 @@
 require('@nomicfoundation/hardhat-toolbox');
+require('dotenv').config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: '0.8.28',
   networks: {
-    localnet: {
-      url: 'http://127.0.0.1:36879',
+    mainnet: {
+      url: process.env.RPC_URL,
       chainId: 585858,
       accounts: [
-        'c5114526e042343c6d1899cad05e1c00ba588314de9b96929914ee0df18d46b2',
-        'a492823c3e193d6c595f37a18e3c06650cf4c74558cc818b16130b293716106f',
-        'bf3beef3bd999ba9f2451e06936f0423cd62b815c9233dd3bc90f7e02a1e8673',
-        '6ecadc396415970e91293726c3f5775225440ea0844ae5616135fd10d66b5954'
-      ]
+    '0x285b702eddf2aa34e8bd80ee14d5546bd5b3a963e730892c59df10868d7b64c7',
+    '0x03d6f60bb5129ec4beab9ddf9a4c7431de140003cf2ae0e41549fcfdc6199bbb',
+    '0xf41d48b9d2d33d6db2d9bba58db7ee19ff45cd28176a90b925dd38030bba1636',
+    '0xdf801a3c0ac8108429f1667cc15002a2492436b948244d2ff50405df58e8092e',
+    '0x4f16902da531dbb66053ceda31994ddc150db7cc7d6e2fee5278e9d91988f091',
+    '0xaa1e975c9d636d28416df64918c5779034326b3c6b93bc0b2f96a58483b89017',
+    '0x3496f6a11bb9e5488abc2f0b3cf0fda584f3bc5aaec5f66c86227cea005304bd',
+    '0x40cc3755ab43f12f5f1427fa079527f0a348b8ffc64672acb80cd0a165302b68',
+    '0xe6858950f1e09d55ed1d94d730afa735dda3aa16dd8aec2ab19db3d5fdb6a20d',
+    '0x6fdd5c338da83ab3792287762e0d8619a040e68f1f2c446b3374e063b564fed3'
+  ],
     }
   },
 };

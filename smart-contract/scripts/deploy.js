@@ -6,6 +6,7 @@ async function main() {
 
   // Deploy Oracle first
   const [owner] = await ethers.getSigners();
+  
   const DynamicPricingOracle = await ethers.getContractFactory(
     'DynamicPricingOracle'
   );

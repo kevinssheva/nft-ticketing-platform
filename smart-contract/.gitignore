@@ -5,6 +5,8 @@ node_modules
 /cache
 /artifacts
 
+wallets.json
+
 # TypeChain files
 /typechain
 /typechain-types
