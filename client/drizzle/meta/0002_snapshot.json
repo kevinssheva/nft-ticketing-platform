@@ -1,40 +1,110 @@
 {
-  "id": "f075c371-7ee4-474e-8e8f-dc5d1b437e1d",
-  "prevId": "7e46c1a8-93b8-45dd-800e-ee186f068b43",
+  "id": "40b42e41-3470-45d3-ac7f-2b256b0c0900",
+  "prevId": "f075c371-7ee4-474e-8e8f-dc5d1b437e1d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.account": {
-      "name": "account",
+    "public.seat": {
+      "name": "seat",
       "schema": "",
       "columns": {
-        "address": {
-          "name": "address",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true
         },
-        "username": {
-          "name": "username",
+        "event_id": {
+          "name": "event_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "full_name": {
-          "name": "full_name",
+        "gas": {
+          "name": "gas",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "id_card": {
-          "name": "id_card",
+        "transaction_hash": {
+          "name": "transaction_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seat_row": {
+          "name": "seat_row",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "zone": {
+          "name": "zone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_selling": {
+          "name": "is_selling",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "seat_event_id_event_id_fk": {
+          "name": "seat_event_id_event_id_fk",
+          "tableFrom": "seat",
+          "tableTo": "event",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "seat_creator_id_account_address_fk": {
+          "name": "seat_creator_id_account_address_fk",
+          "tableFrom": "seat",
+          "tableTo": "account",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "address"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "seat_owner_id_account_address_fk": {
+          "name": "seat_owner_id_account_address_fk",
+          "tableFrom": "seat",
+          "tableTo": "account",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "address"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -112,15 +182,15 @@
         "event_creator_address_account_address_fk": {
           "name": "event_creator_address_account_address_fk",
           "tableFrom": "event",
+          "tableTo": "account",
           "columnsFrom": [
             "creator_address"
           ],
-          "tableTo": "account",
           "columnsTo": [
             "address"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -129,107 +199,37 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.seat": {
-      "name": "seat",
+    "public.account": {
+      "name": "account",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "address": {
+          "name": "address",
           "type": "text",
           "primaryKey": true,
           "notNull": true
         },
-        "event_id": {
-          "name": "event_id",
+        "username": {
+          "name": "username",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "gas": {
-          "name": "gas",
+        "full_name": {
+          "name": "full_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "transaction_hash": {
-          "name": "transaction_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "seat_id": {
-          "name": "seat_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "seat_row": {
-          "name": "seat_row",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "zone": {
-          "name": "zone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "owner_id": {
-          "name": "owner_id",
+        "id_card": {
+          "name": "id_card",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "seat_event_id_event_id_fk": {
-          "name": "seat_event_id_event_id_fk",
-          "tableFrom": "seat",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "tableTo": "event",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
-        },
-        "seat_creator_id_account_address_fk": {
-          "name": "seat_creator_id_account_address_fk",
-          "tableFrom": "seat",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "tableTo": "account",
-          "columnsTo": [
-            "address"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
-        },
-        "seat_owner_id_account_address_fk": {
-          "name": "seat_owner_id_account_address_fk",
-          "tableFrom": "seat",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "tableTo": "account",
-          "columnsTo": [
-            "address"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -239,10 +239,10 @@
   },
   "enums": {},
   "schemas": {},
-  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
