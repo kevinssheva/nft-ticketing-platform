@@ -2,11 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      "upload.wikimedia.org",
-      "aqua-reasonable-swallow-899.mypinata.cloud",
-      "pbs.twimg.com",
-    ],
+    domains: ["aqua-reasonable-swallow-899.mypinata.cloud"],
   },
 };
 

@@ -18,6 +18,14 @@ const config = {
   retryDelay: 5000, // 5 seconds
   maxRetries: 3,
 };
+// const config = {
+//   nodeUrl: 'http://127.0.0.1:8545',
+//   privateKey:
+//     'c5114526e042343c6d1899cad05e1c00ba588314de9b96929914ee0df18d46b2',
+//   oracleAddress: '0xA791D59427B2b7063050187769AC871B497F4b3C',
+//   retryDelay: 5000, // 5 seconds
+//   maxRetries: 3,
+// };
 
 class DynamicPricingOracleNode {
   constructor() {
