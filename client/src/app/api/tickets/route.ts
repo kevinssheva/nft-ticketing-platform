@@ -1,7 +1,9 @@
 import { db } from "@/db/drizzle";
 import { seat } from "@/db/schema";
+import { buyTicket, requestDynamicPricing } from "@/eth/app";
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import Web3 from "web3";
 
 export async function GET(req: Request) {
   try {
@@ -57,10 +59,13 @@ export async function PATCH(req: Request) {
         .returning();
 
       // TODO: implement blockchain code to change ticket ownership
+      const web3 = new Web3();
       if (isDynamic) {
         // TODO: implement blockchain code where dynamic pricing is requested
+        requestDynamicPricing(web3, seatId);
       } else {
         // TODO: implement blockchain code where static pricing is requested
+        buyTicket(web3, seatId, updatedSeat[0].price);
       }
 
       return NextResponse.json(updatedSeat[0], { status: 200 });

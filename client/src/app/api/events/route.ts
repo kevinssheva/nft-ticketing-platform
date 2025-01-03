@@ -1,7 +1,9 @@
 import { db } from "@/db/drizzle";
 import { event, seat } from "@/db/schema";
+import { mintTickets } from "@/eth/app";
 import { getPinataUrl, pinata } from "@/lib/pinata";
 import { NextResponse } from "next/server";
+import web3, { Web3 } from "web3";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -121,25 +123,42 @@ export async function POST(req: Request) {
       }
     );
 
-    const newTickets = tempTickets.flat();
+    const newTickets = tempTickets.flat().map((newTicket) => {
+      return {
+        eventId: eventId,
+        price: newTicket.price,
+        seatRow: newTicket.row,
+        zone: newTicket.zone,
+        creatorAddress: newTicket.creator,
+        ownerAddress: newTicket.owner,
+        is_selling: false,
+      };
+    });
 
     // TODO: integrate with blockchain (create ticket)
     const ticketData = await db
       .insert(seat)
-      .values(
-        newTickets.map((newTicket) => {
-          return {
-            eventId: eventId,
-            price: newTicket.price,
-            seatRow: newTicket.row,
-            zone: newTicket.zone,
-            creatorAddress: newTicket.creator,
-            ownerAddress: newTicket.owner,
-            is_selling: false,
-          };
-        })
-      )
+      .values(newTickets)
       .returning();
+
+    const ticketToBlockchain = ticketData.map((ticketDatum) => {
+      return {
+        ticketId: ticketDatum.id,
+        eventId: ticketDatum.eventId,
+        eventName: eventName,
+        dates: [],
+        zone: ticketDatum.zone,
+        seat: ticketDatum.seatRow,
+        priceInWei: web3.utils.toWei(ticketDatum.price, 'ether'),
+        limit: purchaseLimit,
+        sellerAddress: owner,
+        isHold: true
+      }
+    })
+
+    const web3 = new Web3(window.ethereum);
+
+    await mintTickets(web3, ticketToBlockchain);
 
     return NextResponse.json(newEvent, { status: 201 });
   } catch (error) {
