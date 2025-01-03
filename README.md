@@ -2,6 +2,9 @@
 
 NFT Ticketing adalah sistem berbasis blockchain yang menggunakan NFT untuk mengelola dan menerbitkan tiket. Repository ini berisi kode sumber dan konfigurasi untuk melakukan deploy smart contract, menyiapkan platform network, dan menjalankan oracle.
 
+## Video explanation
+https://youtu.be/dci6xXrDmOw
+
 ## Kelompok J
 
 | **NIM**     | **Nama**                  |
