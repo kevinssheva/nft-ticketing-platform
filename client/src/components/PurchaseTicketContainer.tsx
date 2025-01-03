@@ -17,7 +17,7 @@ const PurchaseTicketContainer = ({
 }) => {
   const wallet = useWallet();
 
-  const buyTicket = async (id: string) => {
+  const buyTicket = async (id: string, isDynamic: boolean) => {
     try {
       const response = await fetch(`/api/tickets?seatId=${id}`, {
         method: "PATCH",
@@ -26,6 +26,7 @@ const PurchaseTicketContainer = ({
         },
         body: JSON.stringify({
           ownerAddress: wallet.address,
+          isDynamic: isDynamic,
         }),
       });
 
@@ -72,15 +73,27 @@ const PurchaseTicketContainer = ({
               <p className="text-lg">Row</p>
               <p className="text-lg">: {ticket.seatRow}</p>
             </div>
-            <Button
-              type="button"
-              className="text-white max-w-24 self-end text-lg bg-sky-500 hover:bg-green-500"
-              onClick={() => {
-                buyTicket(ticket.id);
-              }}
-            >
-              Buy
-            </Button>
+            <p className="text-xl font-bold text-center">Buy Ticket</p>
+            <div className="grid grid-cols-2 gap-8 w-full">
+              <Button
+                type="button"
+                className="text-white self-end text-lg bg-sky-500 hover:bg-green-500"
+                onClick={() => {
+                  buyTicket(ticket.id, true);
+                }}
+              >
+                Dynamic Pricing
+              </Button>
+              <Button
+                type="button"
+                className="text-white self-end text-lg bg-sky-500 hover:bg-green-500"
+                onClick={() => {
+                  buyTicket(ticket.id, false);
+                }}
+              >
+                Normal Pricing
+              </Button>
+            </div>
           </Card>
         ))}
       </div>

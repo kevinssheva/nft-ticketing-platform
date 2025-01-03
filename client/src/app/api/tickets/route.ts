@@ -32,13 +32,14 @@ export async function PATCH(req: Request) {
   const url = new URL(req.url);
   const seatId = url.searchParams.get("seatId");
 
-  const { ownerAddress, isSelling } = await req.json();
+  const { ownerAddress, isSelling, isDynamic } = await req.json();
 
   if ((!ownerAddress && isSelling === undefined) || !seatId) {
     return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
   }
 
   if (ownerAddress) {
+    // buying ticket, transfer ownership to ownerAddress
     try {
       const seatRecord = await db.select().from(seat).where(sql`${seat.id} = ${seatId}`).limit(1).execute();
 
@@ -55,12 +56,20 @@ export async function PATCH(req: Request) {
         .where(sql`${seat.id} = ${seatId}`)
         .returning();
 
+      // TODO: implement blockchain code to change ticket ownership
+      if (isDynamic) {
+        // TODO: implement blockchain code where dynamic pricing is requested
+      } else {
+        // TODO: implement blockchain code where static pricing is requested
+      }
+
       return NextResponse.json(updatedSeat[0], { status: 200 });
     } catch (error) {
       console.error("Error updating seat owner:", error);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
   } else {
+    // selling ticket, change status is_selling to true
     try {
       const seatRecord = await db.select().from(seat).where(sql`${seat.id} = ${seatId}`).limit(1).execute();
 
