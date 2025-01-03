@@ -1,5 +1,5 @@
-import ListEventsContainer from "@/components/ListEventsContainer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ListEventsContainer from '@/components/ListEventsContainer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Event = () => {
   return (

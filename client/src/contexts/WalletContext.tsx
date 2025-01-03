@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -6,9 +6,9 @@ import React, {
   useState,
   useEffect,
   ReactNode,
-} from "react";
-import { Web3Provider } from "@ethersproject/providers";
-import { Account } from "@/db/schema";
+} from 'react';
+import { Web3Provider } from '@ethersproject/providers';
+import { Account } from '@/db/schema';
 interface WalletContextProps {
   provider: Web3Provider | null;
   address: string | null;
@@ -22,7 +22,7 @@ interface WalletContextProps {
   ) => Promise<void>;
 }
 
-const WalletContext = createContext<WalletContextProps | undefined>(undefined);
+const WalletContext = undefined;
 
 export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [provider, setProvider] = useState<Web3Provider | null>(null);
@@ -30,10 +30,10 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [account, setAccount] = useState<Account | null>(null);
 
   const connectWallet = async () => {
-    if (typeof window.ethereum !== "undefined") {
+    if (typeof window.ethereum !== 'undefined') {
       try {
         const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
+          method: 'eth_requestAccounts',
         });
         const walletAddress = accounts[0];
         setAddress(walletAddress);
@@ -44,10 +44,10 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         const accountData = await fetchAccount(walletAddress);
         setAccount(accountData);
       } catch (error) {
-        console.error("Error connecting to MetaMask:", error);
+        console.error('Error connecting to MetaMask:', error);
       }
     } else {
-      console.error("MetaMask is not installed. Please install MetaMask.");
+      console.error('MetaMask is not installed. Please install MetaMask.');
     }
   };
 
@@ -56,8 +56,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   ): Promise<Account | null> => {
     try {
       const response = await fetch(`/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: walletAddress }),
       });
 
@@ -65,11 +65,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         const data = await response.json();
         return data;
       } else {
-        console.error("Account not found in the database.");
+        console.error('Account not found in the database.');
         return null;
       }
     } catch (error) {
-      console.error("Error fetching account details:", error);
+      console.error('Error fetching account details:', error);
       return null;
     }
   };
@@ -80,30 +80,30 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     idCard: string
   ) => {
     if (!address) {
-      throw Error("Wallet address is required to register.");
+      throw Error('Wallet address is required to register.');
     }
 
     try {
       const response = await fetch(`/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, username, fullName, idCard }),
       });
 
       if (response.ok) {
         const data = await response.json();
         setAccount(data);
-        console.log("Account registered successfully.");
+        console.log('Account registered successfully.');
       } else {
-        console.error("Error registering account.");
+        console.error('Error registering account.');
       }
     } catch (error) {
-      console.error("Error registering account:", error);
+      console.error('Error registering account:', error);
     }
   };
 
   useEffect(() => {
-    if (typeof window.ethereum !== "undefined") {
+    if (typeof window.ethereum !== 'undefined') {
       const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length > 0) {
           setAddress(accounts[0]);
@@ -111,14 +111,14 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setAddress(null);
           setAccount(null);
-          console.error("No accounts found.");
+          console.error('No accounts found.');
         }
       };
 
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
       return () => {
         window.ethereum.removeListener(
-          "accountsChanged",
+          'accountsChanged',
           handleAccountsChanged
         );
       };
@@ -144,7 +144,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 export const useWallet = () => {
   const context = useContext(WalletContext);
   if (!context) {
-    throw new Error("useWallet must be used within a WalletProvider");
+    throw new Error('useWallet must be used within a WalletProvider');
   }
   return context;
 };

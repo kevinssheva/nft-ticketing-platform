@@ -1,21 +1,11 @@
-"use client";
+'use client';
 
-import { useWallet } from "@/contexts/WalletContext";
-import Link from "next/link";
-import React, { useEffect } from "react";
+import Link from 'next/link';
+import React from 'react';
+import { useWeb3 } from '../app/hooks/useAccount';
 
 const Navbar = () => {
-  const wallet = useWallet();
-
-  useEffect(() => {
-    const connect = async () => {
-      if (!wallet.provider) {
-        await wallet.connectWallet();
-      }
-    };
-    connect();
-    // Run only once when the component mounts
-  }, [wallet]); // Add wallet.provider as a dependency
+  const { account, connect, disconnect } = useWeb3();
 
   return (
     <nav className="border-b p-6">
@@ -24,10 +14,10 @@ const Navbar = () => {
         <p>
           Your go-to concert ticket marketplace with the power of blockchain!
         </p>
-        {wallet.provider ? (
-          <p>Wallet: {wallet.address}</p>
+        {account ? (
+          <p>Account: {account}</p>
         ) : (
-          <p>You’re not connected to a wallet!</p>
+          <p>Youre not connected to a wallet!</p>
         )}
       </div>
       <div className="flex flex-row justify-between mt-4">
@@ -43,12 +33,21 @@ const Navbar = () => {
           </Link>
         </div>
         <div className="flex gap-4">
-          {wallet.account === null ? (
-            <Link href="/register" className="text-purple-500">
-              Register
-            </Link>
-          ) : (
-            <p>Hi, {wallet.account.fullName}</p>
+          {!account && (
+            <button
+              onClick={connect}
+              className="bg-purple-500 text-white px-4 py-2 rounded"
+            >
+              Connect Wallet
+            </button>
+          )}
+          {account && (
+            <button
+              onClick={disconnect}
+              className="bg-purple-500 text-white px-4 py-2 rounded"
+            >
+              Disconnect Wallet
+            </button>
           )}
         </div>
       </div>

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
-import { Trash2 } from "lucide-react";
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Trash2 } from 'lucide-react';
 import {
   FormControl,
   FormDescription,
@@ -12,20 +12,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
-import { useWallet } from "@/contexts/WalletContext";
+} from './ui/form';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { useWeb3 } from '@/app/hooks/useAccount';
+import { mintTickets } from '@/app/eth/app';
+import Web3 from 'web3';
 
 const CreateEventForm = () => {
-  const wallet = useWallet();
+  const { account } = useWeb3();
 
   const validateFile = (file: FileList) => {
     if (file.length !== 1) {
       return false;
     }
-    if (file[0].type !== "image/png" && file[0].type !== "image/jpg") {
+    if (file[0].type !== 'image/png' && file[0].type !== 'image/jpg') {
       return false;
     }
     return true;
@@ -34,105 +36,105 @@ const CreateEventForm = () => {
   const formSchema = z.object({
     eventName: z
       .string({
-        message: "Please specify the event name.",
+        message: 'Please specify the event name.',
       })
       .trim()
-      .min(4, { message: "Event name too short." }),
+      .min(4, { message: 'Event name too short.' }),
     eventDetail: z.coerce
       .string({
-        message: "Please describe the event.",
+        message: 'Please describe the event.',
       })
       .trim()
-      .min(4, { message: "Event detail too short." }),
+      .min(4, { message: 'Event detail too short.' }),
     eventDate: z.coerce.date({
-      message: "Please specify the event start time.",
+      message: 'Please specify the event start time.',
     }),
     sellDate: z.coerce.date({
-      message: "Please specify when the tickets can be purchased.",
+      message: 'Please specify when the tickets can be purchased.',
     }),
     venue: z.coerce
       .string({
-        message: "Please specify where the event will be held.",
+        message: 'Please specify where the event will be held.',
       })
       .trim()
-      .min(4, { message: "Venue name too short." })
+      .min(4, { message: 'Venue name too short.' })
       .max(4000),
     purchaseLimit: z.coerce
       .number({
-        message: "Please specify the individual purchase limit.",
+        message: 'Please specify the individual purchase limit.',
       })
-      .positive({ message: "Purchase limit must be a positive number." }),
+      .positive({ message: 'Purchase limit must be a positive number.' }),
     tickets: z
       .array(
         z.object({
           zone: z
             .string({
-              message: "Please specify the zone name.",
+              message: 'Please specify the zone name.',
             })
-            .min(1, { message: "The zone name must not be empty" })
+            .min(1, { message: 'The zone name must not be empty' })
             .max(10, {
-              message: "The zone name must be under 10 characters long",
+              message: 'The zone name must be under 10 characters long',
             }),
           row: z.coerce
             .number({
-              message: "Please specify the amount of row.",
+              message: 'Please specify the amount of row.',
             })
             .positive({
-              message: "Number of row must be a positive number.",
+              message: 'Number of row must be a positive number.',
             }),
           seat: z.coerce
             .number({
-              message: "Please specify the amount of seat.",
+              message: 'Please specify the amount of seat.',
             })
             .positive({
-              message: "Number of seat must be a positive number.",
+              message: 'Number of seat must be a positive number.',
             }),
           price: z.coerce
             .number({
-              message: "Please specify the seat price.",
+              message: 'Please specify the seat price.',
             })
             .positive({
-              message: "Seat price must be a positive number.",
+              message: 'Seat price must be a positive number.',
             }),
         })
       )
-      .min(1, { message: "Please add at least one zone." }),
+      .min(1, { message: 'Please add at least one zone.' }),
     posterImage: z
-      .instanceof(FileList, { message: "Please upload a valid file." })
+      .instanceof(FileList, { message: 'Please upload a valid file.' })
       .refine((file: FileList | null) => file !== null, {
-        message: "Please upload a valid file.",
+        message: 'Please upload a valid file.',
       })
-      .refine(validateFile, { message: "Invalid file format." }),
+      .refine(validateFile, { message: 'Invalid file format.' }),
     seatImage: z
-      .instanceof(FileList, { message: "Please upload a valid file." })
+      .instanceof(FileList, { message: 'Please upload a valid file.' })
       .refine((file: FileList | null) => file !== null, {
-        message: "Please upload a valid file.",
+        message: 'Please upload a valid file.',
       })
-      .refine(validateFile, { message: "Invalid file format." }),
+      .refine(validateFile, { message: 'Invalid file format.' }),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      eventName: "",
-      eventDetail: "",
+      eventName: '',
+      eventDetail: '',
       eventDate: new Date(),
       sellDate: new Date(),
-      venue: "",
+      venue: '',
       purchaseLimit: 0,
-      tickets: [{ zone: "", row: 0, seat: 0, price: 0 }],
+      tickets: [{ zone: '', row: 0, seat: 0, price: 0 }],
       posterImage: undefined,
       seatImage: undefined,
     },
   });
 
-  const eventDateRef = form.register("eventDate");
-  const sellDateRef = form.register("sellDate");
-  const posterImageRef = form.register("posterImage");
-  const seatImageRef = form.register("seatImage");
+  const eventDateRef = form.register('eventDate');
+  const sellDateRef = form.register('sellDate');
+  const posterImageRef = form.register('posterImage');
+  const seatImageRef = form.register('seatImage');
 
   const { fields, append, remove } = useFieldArray({
-    name: "tickets",
+    name: 'tickets',
     control: form.control,
   });
 
@@ -148,30 +150,30 @@ const CreateEventForm = () => {
     });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const posterImageBase64 = await convertFileToBase64(values.posterImage[0]);
-    const seatImageBase64 = await convertFileToBase64(values.seatImage[0]);
+    console.log(values);
+    console.log(account, web3);
+    if (!account) return;
 
-    const requestData = {
-      ...values,
-      owner: wallet.address,
-      posterImage: posterImageBase64,
-      seatImage: seatImageBase64,
+    const ticketData = {
+      ticketId: 1,
+      eventId: 1,
+      eventName: values.eventName,
+      dates: [],
+      zone: values.tickets[0].zone,
+      seat: values.tickets[0].seat.toString(),
+      priceInWei: 2,
+      limit: values.purchaseLimit,
+      sellerAddress: account,
+      isHold: true,
     };
 
     try {
-      const response = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
-      });
-
-      if (response.ok) {
-        alert("Event created succesfully");
-      } else {
-        alert("Error creating event");
+      for (let i = 0; i < values.tickets[0].seat; i++) {
+        const web3 = new Web3(window.ethereum);
+        await mintTickets(web3, ticketData);
       }
     } catch (error) {
-      console.error("Unknown error occured:", error);
+      console.error('Unknown error occured:', error);
     }
   }
 
@@ -410,7 +412,7 @@ const CreateEventForm = () => {
               type="button"
               onClick={() =>
                 append({
-                  zone: "",
+                  zone: '',
                   row: 0,
                   seat: 0,
                   price: 0,
@@ -476,6 +478,7 @@ const CreateEventForm = () => {
         </div>
         <Button type="submit">Create Event</Button>
       </form>
+      <Button onClick={() => console.log(window.ethereum)}>Log Web3</Button>
     </FormProvider>
   );
 };
