@@ -19,6 +19,7 @@ Sebelum memulai, pastikan Anda telah menginstal:
 - [Hardhat](https://hardhat.org/)
 - [Kurtosis](https://docs.kurtosistech.com/)
 - [Docker](https://www.docker.com/)
+- [Pinata](https://pinata.cloud/)
 - Pengetahuan dasar tentang blockchain dan konsep NFT
 
 ## Struktur Repository
@@ -85,6 +86,33 @@ Sebelum memulai, pastikan Anda telah menginstal:
 
    ```bash
    node index.js
+   ```
+
+### Menjalankan Client
+
+1. Masuk ke folder `client`:
+
+   ```bash
+   cd client
+   ```
+
+2. Unduh dan install seluruh package yang dibutuhkan dengan perintah berikut:
+   ```bash
+   bun install
+   ```
+
+3. Isi konfigurasi .env berikut:
+  ```bash
+  NEXT_PUBLIC_DATABASE_URL=
+  NEXT_PUBLIC_PINATA_JWT=
+  NEXT_PUBLIC_PINATA_GATEWAY_URL=
+  NEXT_PUBLIC_PINATA_GATEWAY_KEY=
+  ```
+
+4. Jalankan client dengan perintah berikut:
+
+   ```bash
+   bun dev
    ```
 
 ## Catatan
