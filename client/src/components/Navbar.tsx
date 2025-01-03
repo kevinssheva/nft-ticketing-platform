@@ -35,10 +35,7 @@ const Navbar = () => {
           <Link href="/" className="text-purple-500">
             Home
           </Link>
-          <Link href="/" className="text-purple-500">
-            Create Ticket
-          </Link>
-          <Link href="/" className="text-purple-500">
+          <Link href="/event/create" className="text-purple-500">
             Create Event
           </Link>
           <Link href="/profile" className="text-purple-500">
