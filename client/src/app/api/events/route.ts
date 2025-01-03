@@ -3,7 +3,7 @@ import { event, seat } from "@/db/schema";
 import { mintTickets } from "@/eth/app";
 import { getPinataUrl, pinata } from "@/lib/pinata";
 import { NextResponse } from "next/server";
-import web3, { Web3 } from "web3";
+import { Web3 } from "web3";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     const newEvent = await db
       .insert(event)
       .values({
-        creatorAddress: owner.address,
+        creatorAddress: owner,
         dateEvent: new Date(eventDate),
         dateSell: new Date(sellDate),
         title: eventName,
@@ -113,8 +113,8 @@ export async function POST(req: Request) {
               price: ticket.price.toString(),
               row: rowCode,
               zone: ticket.zone,
-              creator: owner.address,
-              owner: owner.address,
+              creator: owner,
+              owner: owner,
             });
           }
         }
@@ -127,6 +127,7 @@ export async function POST(req: Request) {
       return {
         eventId: eventId,
         price: newTicket.price,
+        transactionHash: "",
         seatRow: newTicket.row,
         zone: newTicket.zone,
         creatorAddress: newTicket.creator,
@@ -136,29 +137,30 @@ export async function POST(req: Request) {
     });
 
     // TODO: integrate with blockchain (create ticket)
-    const ticketData = await db
-      .insert(seat)
-      .values(newTickets)
-      .returning();
+    const ticketData = await db.insert(seat).values(newTickets).returning();
+
+    const web3 = new Web3("http://127.0.0.1:8545/");
 
     const ticketToBlockchain = ticketData.map((ticketDatum) => {
+      const priceInWei = web3.utils.toWei(ticketDatum.price, "ether");
+
       return {
         ticketId: ticketDatum.id,
         eventId: ticketDatum.eventId,
         eventName: eventName,
-        dates: [],
+        dates: [new Date(eventDate), new Date(eventDate), new Date(eventDate)],
         zone: ticketDatum.zone,
         seat: ticketDatum.seatRow,
-        priceInWei: web3.utils.toWei(ticketDatum.price, 'ether'),
+        priceInWei: priceInWei,
         limit: purchaseLimit,
         sellerAddress: owner,
-        isHold: true
-      }
-    })
-
-    const web3 = new Web3(window.ethereum);
+        isHold: true,
+      };
+    });
 
     await mintTickets(web3, ticketToBlockchain);
+
+    console.log("insert blockchain");
 
     return NextResponse.json(newEvent, { status: 201 });
   } catch (error) {

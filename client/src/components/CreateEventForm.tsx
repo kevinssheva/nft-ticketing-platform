@@ -158,6 +158,8 @@ const CreateEventForm = () => {
       seatImage: seatImageBase64,
     };
 
+    console.log(wallet.address);
+
     try {
       const response = await fetch("/api/events", {
         method: "POST",
