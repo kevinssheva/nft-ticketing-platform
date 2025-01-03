@@ -156,7 +156,7 @@ export async function POST(req: Request) {
       }
     })
 
-    const web3object = new Web3("http://127.0.0.1:43098");
+    const web3object = new Web3(window.ethereum);
 
     await mintTickets(web3object, ticketToBlockchain);
 
