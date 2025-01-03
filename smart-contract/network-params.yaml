@@ -1,10 +1,40 @@
 participants:
   - el_type: geth
     cl_type: lighthouse
-    count: 2
-  - el_type: geth
-    cl_type: teku
 network_params:
-  network_id: "585858"
+  network_id: '585858'
+  prefunded_accounts: |-
+    {
+      "0x932Dda2cA86000739171dE4e28616F213Bcb15F5": {
+        "balance": "10ETH"
+      },
+      "0x9A164471D38EB143e25Be2938659E1073133aAfD": {
+        "balance": "1ETH"
+      },
+      "0x3ae85E0d853796f16E907c0D8E033758F767f52a": {
+        "balance": "1ETH"
+      },
+      "0x1981155Cdb16061cbF64C9DA31763F1983F706aC": {
+        "balance": "1ETH"
+      },
+      "0xA8d3b403B7943d4Db5950aDAfeC1B8a7f5820d81": {
+        "balance": "1ETH"
+      },
+      "0x5Ac719C8F538036cD939C181ECBA9c6381a7a5E1": {
+        "balance": "1ETH"
+      },
+      "0xACd1B84AFa9fa17A9D489A166F2D863Dfcdf279E": {
+        "balance": "1ETH"
+      },
+      "0x71F6c45421F1da2dFC606835fD6A218B9549eF76": {
+        "balance": "1ETH"
+      },
+      "0x4155eF2969DdE3124F14d5ebfA69EA30729bE82C": {
+        "balance": "1ETH"
+      },
+      "0x129a81Da16a14A60371e292D32021945B1f49D13": {
+        "balance": "1ETH"
+      }
+    }
 additional_services:
   - dora

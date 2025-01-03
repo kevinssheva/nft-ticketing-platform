@@ -4,10 +4,12 @@ import TicketMarketplace from "@/app/abi/TicketMarketplace.json";
 // TODO: implement blockchain code
 const HARDHAT_NETWORK_URL = "http://localhost:8545";
 
-const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+export function getOracle(web3: Web3) {
+  return new web3.eth.Contract(DynamicPricingOracle.abi, "0x4939F8b88743C72c7eceA682F1A23CeA481be450");
+}
 
 export function getContract(web3: Web3) {
-  return new web3.eth.Contract(TicketMarketplace.abi, CONTRACT_ADDRESS);
+  return new web3.eth.Contract(TicketMarketplace.abi, "0xE75454865977313C05545D7188146fEC33eca217");
 }
 
 export async function mintTickets(
@@ -27,39 +29,22 @@ export async function mintTickets(
 ) {
   const marketplace = getContract(web3);
 
-  for (const ticketDatum of ticketData) {
-    try {
-      console.log("1");
-      const createTicketTx = await marketplace.methods
-        .createTicket(
-          web3.utils.soliditySha3(ticketDatum.ticketId),
-          web3.utils.soliditySha3(ticketDatum.eventId),
-          ticketDatum.eventName,
-          [
-            web3.utils.soliditySha3(ticketDatum.dates[0]),
-            web3.utils.soliditySha3(ticketDatum.dates[1]),
-            web3.utils.soliditySha3(ticketDatum.dates[2]),
-          ],
-          ticketDatum.zone,
-          ticketDatum.seat,
-          ticketDatum.priceInWei,
-          ticketDatum.limit,
-          ticketDatum.sellerAddress,
-          ticketDatum.isHold
-        )
-        .send({ from: ticketDatum.sellerAddress });
-
-      console.log("2");
-      const addProductTx = await marketplace.methods
-        .addProduct(ticketDatum.ticketId)
-        .send({
-          from: ticketDatum.sellerAddress,
-        });
-      console.log("3");
-    } catch (error) {
-      console.error(`Failed to mint ticket:`, error);
-    }
-  }
+  ticketData.forEach(async (ticketDatum) => {
+    await marketplace.methods.createTicket(
+      ticketDatum.ticketId,
+      ticketDatum.eventId,
+      ticketDatum.eventName,
+      ticketDatum.dates,
+      ticketDatum.zone,
+      ticketDatum.seat,
+      ticketDatum.priceInWei,
+      ticketDatum.limit,
+      ticketDatum.sellerAddress,
+      ticketDatum.isHold
+    );
+ 
+    await marketplace.methods.addProduct(ticketDatum.ticketId);
+  });
 }
 
 export async function requestDynamicPricing(web3: Web3, ticketId: string) {

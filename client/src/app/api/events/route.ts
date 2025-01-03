@@ -154,11 +154,13 @@ export async function POST(req: Request) {
         priceInWei: priceInWei,
         limit: purchaseLimit,
         sellerAddress: owner,
-        isHold: true,
-      };
-    });
+        isHold: true
+      }
+    })
 
-    await mintTickets(web3, ticketToBlockchain);
+    const web3object = new Web3(window.ethereum);
+
+    await mintTickets(web3object, ticketToBlockchain);
 
     console.log("insert blockchain");
 
